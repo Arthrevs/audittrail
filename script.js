@@ -1,5 +1,7 @@
-lucide.createIcons();
+// Initialize Lucide icons
+lucide.createIcons(); 
 
+// DOM Element References
 const auditBtn = document.getElementById('auditBtn');
 const userInput = document.getElementById('userInput');
 const outputContent = document.getElementById('outputContent');
@@ -8,58 +10,88 @@ const gaugeValue = document.getElementById('gaugeValue');
 const loader = document.getElementById('loader');
 const btnText = document.getElementById('btnText');
 
-// Function to update the circle meter
+/**
+ * Updates the SVG circular meter based on the consensus score
+ * @param {number} percent - The confidence percentage (0-100)
+ */
 function setConfidence(percent) {
-    const circumference = 2 * Math.PI * 45; // 282.7
+    const circumference = 2 * Math.PI * 45; // Approx 282.7 based on r=45
     const offset = circumference - (percent / 100 * circumference);
+    
+    // Apply stroke-dashoffset for the animation effect
     gaugeFill.style.strokeDashoffset = offset;
     gaugeValue.innerText = `${percent}%`;
 
-    // Visual feedback based on score
-    if (percent < 50) gaugeFill.style.stroke = "#ef4444"; // Red
-    else if (percent < 80) gaugeFill.style.stroke = "#f59e0b"; // Amber
-    else gaugeFill.style.stroke = "#3b82f6"; // Blue
+    // Visual feedback color-coding
+    if (percent < 50) {
+        gaugeFill.style.stroke = "#ef4444"; // High Risk (Red)
+    } else if (percent < 80) {
+        gaugeFill.style.stroke = "#f59e0b"; // Medium Certainty (Amber)
+    } else {
+        gaugeFill.style.stroke = "#3b82f6"; // High Consensus (Blue)
+    }
 }
 
+/**
+ * Executes the cross-model audit via the FastAPI backend
+ */
 auditBtn.addEventListener('click', async () => {
     const question = userInput.value.trim();
     if (!question) return;
 
-    // Reset UI state
+    // Reset UI state to processing mode
     setConfidence(0);
-    outputContent.innerText = ">> INITIALIZING SECURE HANDSHAKE...\n>> ACCESSING MULTI-MODEL CORE...";
+    outputContent.innerText = ">> INITIALIZING SECURE HANDSHAKE...\n>> ACCESSING MULTI-MODEL CORE...\n>> COMPARING GPT-4 & CEREBRAS PERSPECTIVES...";
     btnText.style.display = "none";
     loader.style.display = "block";
     auditBtn.disabled = true;
 
     try {
-        // Replace the fetch block with this production-ready version
-const response = await fetch('https://audittrail.onrender.com/audit', { // Render URL
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question: question })
-});
+        // PRODUCTION FIX: Send raw text/plain string to prevent 422 errors
+        const response = await fetch('https://audittrail.onrender.com/audit', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'text/plain' 
+            },
+            body: question // DO NOT use JSON.stringify here
+        });
 
-const textReport = await response.text();
-outputContent.innerText = textReport;
+        if (!response.ok) {
+            throw new Error(`Server returned status ${response.status}`);
+        }
 
-// Improved Regex to catch the score accurately
-const match = textReport.match(/Combined Consensus Confidence:\s*(\d+)/); 
-if (match && match[1]) {
-    setConfidence(parseInt(match[1]));
-}
+        const textReport = await response.text();
+        
+        // Render the report in the terminal container
+        outputContent.innerText = textReport;
+
+        // Improved Regex to extract score from formatted text:
+        // "Combined Consensus Confidence: 85%"
+        const match = textReport.match(/Combined Consensus Confidence:\s*(\d+)/); 
+        if (match && match[1]) {
+            setConfidence(parseInt(match[1]));
+        }
 
     } catch (error) {
-        outputContent.innerText = "CRITICAL ERROR: Could not connect to AuditTrail Core.";
+        console.error("AuditTrail Connection Error:", error);
+        outputContent.innerText = "CRITICAL ERROR: Connection to AuditTrail Core failed. Verify Render service status.";
     } finally {
+        // Restore UI state
         btnText.style.display = "block";
         loader.style.display = "none";
         auditBtn.disabled = false;
     }
 });
 
-// Copy Report Function
+/**
+ * Copy Functionality for Audit Reports
+ */
 document.getElementById('copyBtn').addEventListener('click', () => {
-    navigator.clipboard.writeText(outputContent.innerText);
-    alert("Report copied to clipboard.");
+    if (!outputContent.innerText || outputContent.innerText.includes("INITIALIZING")) return;
+    
+    navigator.clipboard.writeText(outputContent.innerText).then(() => {
+        alert("Unified Audit Report copied to clipboard.");
+    }).catch(err => {
+        console.error("Copy failed:", err);
+    });
 });
