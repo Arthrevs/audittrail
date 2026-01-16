@@ -15,7 +15,9 @@ const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 
 // Configuration
-const API_ENDPOINT = 'http://127.0.0.1:8000/audit';
+const API_ENDPOINT = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://127.0.0.1:8000/audit'
+    : '/audit'; // Use relative path if deployed
 
 // ============================================
 // GAUGE ANIMATION
