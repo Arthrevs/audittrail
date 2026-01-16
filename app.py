@@ -15,14 +15,14 @@ logging.basicConfig(level=logging.INFO)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
-    raise RuntimeError("OPENAI_API_KEY not found. Check .env file.")
+    print("WARNING: OPENAI_API_KEY not found. Ensure it is set in Render.")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = FastAPI(
     title="AuditTrail API (Text-to-Text)",
     description="Accepts plain text, returns a plain text report.",
-    version="6.0.0"
+    version="6.1.0"
 )
 
 app.add_middleware(
@@ -45,8 +45,8 @@ def format_text_report(question, data):
                 AUDITTRAIL TRANSPARENCY REPORT
 ============================================================
 
->>> YOUR QUESTION:
-{question}
+>>> CODE SNIPPET / QUESTION:
+{question[:200]}... (truncated for brevity)
 
 ------------------------------------------------------------
 >>> AI ANSWER:
@@ -58,7 +58,7 @@ def format_text_report(question, data):
 [ Confidence Score ]
 {data.get('confidence_percentage')}%
 
-[ What Might Be Wrong ]
+[ Analysis Logic ]
 {data.get('what_might_be_wrong')}
 
 [ Uncertainty Areas ]
@@ -77,27 +77,33 @@ def format_text_report(question, data):
 # -------------------------------------------------
 @app.post("/audit", response_class=PlainTextResponse)
 def audit_question(
-    # Input is strictly Plain Text
+    # Input is strictly Plain Text (Matches your Frontend)
     question: str = Body(..., media_type="text/plain")
 ):
     try:
         # 1. Validate
         question = question.strip()
         if len(question) < 5:
-            return "Error: Question too short."
+            return "Error: Code is too short to analyze."
 
         # 2. Ask AI for Structure (Internally)
+        # This prompt now includes the advanced "Honesty" logic
         system_prompt = """
-        You are AuditTrail, a strict Security Auditor.
-        
-        Your Scoring Rules:
-        1. If the code is Safe and Correct -> Confidence: 90-100%
-        2. If the code has Minor Bugs -> Confidence: 70-80%
-        3. If the code has CRITICAL SECURITY FLAWS (e.g., buffer overflow, raw pointers, SQL injection, hardcoded memory) -> Confidence MUST be BELOW 50%.
-        
+        You are AuditTrail, an advanced AI Security & Logic Auditor.
+        You use "Generative Self-Reflection" to calculate confidence scores.
+
+        STRICT SCORING RULES (The "Honesty" Protocol):
+        1. [90-100%] SAFE: Code is deterministic, standard, and secure.
+        2. [70-80%]  MINOR BUGS: Code is messy or inefficient, but safe.
+        3. [< 50%]   SECURITY CRITICAL: Buffer overflows, raw pointers, SQL Injection, Hardcoded secrets.
+        4. [< 40%]   RACE CONDITIONS / AMBIGUITY: Threading without locks, non-deterministic outputs (Conflicting Truths).
+        5. [< 20%]   MALICIOUS INTENT: Insider threats, logic bombs, "Rage Quit" comments, sabotage.
+        6. [< 10%]   PHILOSOPHICAL PARADOX: Infinite recursion logic, "Liar's Paradox", unsolvable logic traps.
+
         Reasoning:
-        When code is dangerous, its behavior is "Undefined" and unpredictable. Therefore, you cannot be confident in what it will do.
-        
+        If the code's output cannot be predicted (Race Condition) or is logically impossible (Paradox), your confidence MUST be low. 
+        If the code implies human malice (sabotage comments), your confidence in its "Safety" is near zero.
+
         Return strictly valid JSON with keys: 
         answer, confidence_percentage, what_might_be_wrong, 
         uncertainty_areas, risk_if_incorrect, alternative_interpretation.
@@ -123,10 +129,7 @@ def audit_question(
     except Exception as e:
         return f"System Error: {str(e)}"
 
-# ... (rest of your code above)
-
 if __name__ == "__main__":
     import uvicorn
-    # Get the PORT from Google Cloud, default to 8080 if running locally
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 10000))
     uvicorn.run(app, host="0.0.0.0", port=port)
