@@ -8,31 +8,37 @@ from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from openai import OpenAI
-import google.generativeai as genai
 
-# -------------------------------------------------
-# 1. SETUP & CONFIGURATION
-# -------------------------------------------------
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
+# Environment Variables from Render
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-XAI_API_KEY = os.getenv("XAI_API_KEY")
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+CEREBRAS_API_KEY = os.getenv("CEREBRAS_API_KEY")
+CLOUDFLARE_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN")
+CLOUDFLARE_ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID")
 
-# Clients
+# Initialize Specialized Clients
+# 1. GPT-4o-mini via OpenAI
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
-grok_client = None
-if XAI_API_KEY:
-    grok_client = OpenAI(api_key=XAI_API_KEY, base_url="https://api.x.ai/v1")
 
-if GOOGLE_API_KEY:
-    try:
-        genai.configure(api_key=GOOGLE_API_KEY)
-    except Exception as e:
-        logging.error(f"Gemini Config Error: {e}")
+# 2. Llama 3.3 70B via Cloudflare (Replaces Gemini)
+cloudflare_client = None
+if CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID:
+    cloudflare_client = OpenAI(
+        base_url=f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1",
+        api_key=CLOUDFLARE_API_TOKEN
+    )
 
-app = FastAPI(title="AuditTrail Standard", version="10.1.0")
+# 3. GPT-OSS 120B via Cerebras (Replaces Grok)
+cerebras_client = None
+if CEREBRAS_API_KEY:
+    cerebras_client = OpenAI(
+        base_url="https://api.cerebras.ai/v1",
+        api_key=CEREBRAS_API_KEY
+    )
+
+app = FastAPI(title="AuditTrail Professional Core", version="11.2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -42,139 +48,83 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# -------------------------------------------------
-# 2. UTILITY FUNCTIONS
-# -------------------------------------------------
-def clean_json_text(text: str) -> str:
-    """Safety wrapper to prevent JSON crashes."""
+AUDIT_PROMPT = """
+You are a technical auditor. Evaluate the accuracy and safety of the response.
+Return JSON:
+{
+  "confidence_percentage": <0-100>,
+  "technical_critique": "<analysis>",
+  "risk_assessment": "<consequences>",
+  "missing_variables": "<required data>",
+  "alternative_interpretations": "<other possibilities>"
+}
+"""
+
+def clean_json(text: str) -> str:
     if not text: return "{}"
     text = re.sub(r"```json\s*", "", text)
     text = re.sub(r"```\s*", "", text)
     return text.strip()
 
-# -------------------------------------------------
-# 3. AUDIT LOGIC
-# -------------------------------------------------
-AUDIT_PROMPT_TEMPLATE = """
-You are AuditTrail, a specialized AI logic and security auditor.
-ORIGINAL QUESTION: {question}
-ANSWER TO AUDIT: {answer}
-
-TASK:
-1. Conduct a rigorous audit of the provided answer for technical accuracy and safety.
-2. Identify logical fallacies, security vulnerabilities (if code), or hazardous misinformation.
-3. Quantify the confidence level based on the determinism of the problem.
-
-Return strictly valid JSON:
-{{
-  "confidence_percentage": <0-100>,
-  "what_might_be_wrong": "<technical critique>",
-  "risk_assessment": "<potential consequences of incorrect implementation>",
-  "uncertainty_factors": "<missing variables or ambiguous constraints>"
-}}
-"""
-
-async def call_model(client, model_name, question):
-    if not client: return {"model": model_name, "success": False, "error": "API Key Missing"}
+async def run_audit(client, model_id, provider_name, question):
+    if not client: return {"model": provider_name, "success": False, "error": "Missing Configuration"}
     try:
-        # 1. Generate primary response
+        # Step 1: Generate Primary Answer
         resp = client.chat.completions.create(
-            model=model_name,
+            model=model_id,
             messages=[{"role": "user", "content": question}]
         )
-        answer = resp.choices[0].message.content or "No response"
+        answer = resp.choices[0].message.content or "No content returned."
 
-        # 2. Execute audit
+        # Step 2: Perform Cross-Audit
         audit_resp = client.chat.completions.create(
-            model=model_name,
-            messages=[{"role": "user", "content": AUDIT_PROMPT_TEMPLATE.format(
-                question=question, answer=answer
-            )}],
+            model=model_id,
+            messages=[
+                {"role": "system", "content": AUDIT_PROMPT},
+                {"role": "user", "content": f"Query: {question}\\nAnswer: {answer}"}
+            ],
             response_format={"type": "json_object"}
         )
+        audit_data = json.loads(clean_json(audit_resp.choices[0].message.content))
         
-        raw_json = audit_resp.choices[0].message.content or "{}"
-        audit_data = json.loads(clean_json_text(raw_json))
-        
-        return {"model": model_name, "answer": answer, "audit": audit_data, "success": True}
+        return {"model": provider_name, "answer": answer, "audit": audit_data, "success": True}
     except Exception as e:
-        return {"error": str(e), "model": model_name, "success": False}
+        return {"model": provider_name, "success": False, "error": str(e)}
 
-async def call_gemini(question):
-    if not GOOGLE_API_KEY: return {"model": "Gemini", "success": False, "error": "API Key Missing"}
-    try:
-        model = genai.GenerativeModel('gemini-pro')
-        resp = model.generate_content(question)
-        if not resp.parts: return {"model": "Gemini", "success": False, "error": "Safety Block"}
-        answer = resp.text
-        
-        audit_resp = model.generate_content(AUDIT_PROMPT_TEMPLATE.format(
-            question=question, answer=answer
-        ))
-        
-        text = audit_resp.text
-        s, e = text.find('{'), text.rfind('}') + 1
-        audit_data = json.loads(clean_json_text(text[s:e])) if s >= 0 else {"confidence_percentage": 0}
-            
-        return {"model": "Gemini", "answer": answer, "audit": audit_data, "success": True}
-    except Exception as e:
-        return {"error": str(e), "model": "Gemini", "success": False}
-
-async def multi_model_audit(question):
+@app.post("/audit", response_class=PlainTextResponse)
+async def process_request(question: str = Body(..., media_type="text/plain")):
     tasks = [
-        call_model(openai_client, "gpt-4o-mini", question),
-        call_model(grok_client, "grok-2-latest", question),
-        call_gemini(question)
+        run_audit(openai_client, "gpt-4o-mini", "GPT-4", question),
+        run_audit(cloudflare_client, "@cf/meta/llama-3.3-70b-instruct-fp8-fast", "Cloudflare", question),
+        run_audit(cerebras_client, "llama3.3-70b", "Cerebras", question)
     ]
     
     results = await asyncio.gather(*tasks)
     successful = [r for r in results if r.get("success")]
     confs = [r["audit"].get("confidence_percentage", 0) for r in successful]
-    avg = sum(confs)/len(confs) if confs else 0
-    
-    return {
-        "results": results,
-        "consensus": {"average_confidence": round(avg, 1)}
-    }
+    avg_conf = round(sum(confs)/len(confs), 1) if confs else 0
 
-def format_report_standard(question, data):
-    consensus = data.get("consensus", {})
-    
-    report = f"""AUDITTRAIL TRANSPARENCY REPORT
-Version: 10.1.0-Global
-Audit Parameters: Multi-Model Consensus
+    # Professional Sequential Output
+    output = "AUDITTRAIL TRANSPARENCY REPORT\\n"
+    output += f"Consensus Confidence: {avg_conf}%\\n"
+    output += f"Verification Status: {len(successful)} of {len(results)} active\\n\\n"
 
-QUERY SUMMARY
-{question[:150]}...
-
-METRICS
-Consensus Confidence Score: {consensus.get('average_confidence')}%
-Model Verification Count: {len([r for r in data.get('results', []) if r.get('success')])}
-
-AUDIT DETAILS
-"""
-
-    for r in data.get("results", []):
+    for r in results:
         mod = r['model']
         if r.get('success'):
             audit = r['audit']
-            report += f"\n[{mod}]\n"
-            report += f"Confidence: {audit.get('confidence_percentage')}%\n"
-            report += f"Analysis: {audit.get('what_might_be_wrong', 'N/A')}\n"
-            report += f"Risk Factor: {audit.get('risk_assessment', 'N/A')}\n"
+            output += f"[{mod}] ANALYSIS\\n"
+            output += f"Confidence Score: {audit.get('confidence_percentage')}%\\n"
+            output += f"Technical Critique: {audit.get('technical_critique')}\\n"
+            output += f"Missing Information: {audit.get('missing_variables')}\\n"
+            output += f"Alternative Interpretations: {audit.get('alternative_interpretations')}\\n"
+            output += f"Risk Factor: {audit.get('risk_assessment')}\\n\\n"
         else:
-            report += f"\n[{mod}] STATUS: FAILED ({r.get('error', 'Authentication/Connection Error')})\n"
-        
-    return report
+            output += f"[{mod}] STATUS: FAILED\\nReason: {r.get('error')}\\n\\n"
 
-@app.post("/audit", response_class=PlainTextResponse)
-async def audit_endpoint(question: str = Body(..., media_type="text/plain")):
-    if len(question.strip()) < 3: return "Error: Input length insufficient."
-    
-    data = await multi_model_audit(question)
-    return format_report_standard(question, data)
+    output += "MEDICAL DISCLAIMER: Systems cannot diagnose conditions. Consult a professional."
+    return output
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 10000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
