@@ -82,11 +82,9 @@ async def process_request(question: str = Body(..., media_type="text/plain")):
 
     # 4. Sequential Professional Formatting
     output = "ANSWER BY AI\n"  # Updated Header
-    output += "========================================\n"
     output += f"{primary_answer}\n\n"
     
     output += "AUDITTRAIL UNIFIED REPORT\n"
-    output += "========================================\n"
     output += f"Combined Consensus Confidence: {data.get('consensus_score') or 0}%\n\n"
     
     # Arranged Confidence per Claim as requested
@@ -98,7 +96,7 @@ async def process_request(question: str = Body(..., media_type="text/plain")):
     output += f"\n• Uncertainties & Missing Information:\n" + "\n".join([f"- {i}" for i in data.get('uncertainties', [])])
     output += f"\n\n• Reasoning Risks & Possible Biases:\n" + "\n".join([f"- {i}" for i in data.get('risks', [])])
     output += f"\n\n• Severity-Based Warnings:\n" + "\n".join([f"- {i}" for i in data.get('severity', [])])
-    output += f"\n\n• One-Click Second Opinion (Comparison):\n{data.get('comparison')}\n\n"
+    output += f"\n\n• Alternative Perspective (Comparison):\n{data.get('comparison')}\n\n"
     
     output += "DISCLAIMER: This report is a cross-model mathematical audit. Consult professionals for final decisions."
     return output
