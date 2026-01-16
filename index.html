@@ -3,65 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuditTrail | Ocean Core</title>
+    <title>AuditTrail Core | Unified AI Auditor</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div class="ocean-bg"></div>
-
     <div class="app-wrapper">
-        <aside class="sidebar glass">
+        <aside class="sidebar">
             <div class="brand">
-                <i data-lucide="waves" class="ocean-icon"></i>
-                <span>AuditTrail <small>OCEAN</small></span>
+                <i data-lucide="shield-check"></i>
+                <span>AuditTrail <small>PRO</small></span>
             </div>
 
-            <div class="meter-card">
-                <span class="label">CONSENSUS DEPTH</span>
-                <div class="gauge-container">
+            <div class="meter-section glass">
+                <span class="meter-label">CONSENSUS SCORE</span>
+                <div class="gauge-wrapper">
                     <svg viewBox="0 0 100 100">
-                        <defs>
-                            <linearGradient id="oceanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#00f2fe" />
-                                <stop offset="100%" stop-color="#4facfe" />
-                            </linearGradient>
-                        </defs>
-                        <circle class="bg" cx="50" cy="50" r="45"></circle>
-                        <circle class="meter" id="gaugeCircle" cx="50" cy="50" r="45"></circle>
+                        <circle class="gauge-bg" cx="50" cy="50" r="45"></circle>
+                        <circle class="gauge-fill" id="gaugeFill" cx="50" cy="50" r="45"></circle>
                     </svg>
-                    <div class="percentage" id="percentValue">0%</div>
+                    <div class="gauge-value" id="gaugeValue">0%</div>
                 </div>
             </div>
 
             <nav>
-                <a href="#" class="nav-item active"><i data-lucide="anchor"></i> Unified Core</a>
-                <a href="#" class="nav-item"><i data-lucide="activity"></i> Sonar Logs</a>
-                <a href="#" class="nav-item"><i data-lucide="shield-check"></i> Verified Nodes</a>
+                <div class="nav-item active"><i data-lucide="terminal"></i> Audit Core</div>
+                <div class="nav-item"><i data-lucide="shield-alert"></i> Risk Analysis</div>
+                <div class="nav-item"><i data-lucide="database"></i> System Logs</div>
             </nav>
         </aside>
 
         <main class="content">
             <header>
-                <h1>Deep Audit Engine</h1>
-                <p>Submerging your data into cross-model verification.</p>
+                <h1>Unified Audit Engine</h1>
+                <p>Cross-verifying OpenAI GPT-4o & Cerebras Llama-3.3 perspectives.</p>
             </header>
 
-            <div class="input-container glass">
-                <textarea id="userInput" placeholder="Drop your query into the deep..."></textarea>
-                <button id="auditBtn">
-                    <span id="btnText">INITIATE SCAN</span>
-                    <div class="sonar-wave" id="loader"></div>
-                </button>
+            <div class="input-panel glass">
+                <textarea id="userInput" placeholder="Enter claim or query for mathematical audit..."></textarea>
+                <div class="actions">
+                    <button id="auditBtn">
+                        <span id="btnText">EXECUTE AUDIT</span>
+                        <div class="loader" id="loader"></div>
+                    </button>
+                </div>
             </div>
 
-            <div class="terminal-shell glass">
-                <div class="terminal-top">
-                    <span>SONAR_READOUT.DAT</span>
+            <div class="terminal-container glass">
+                <div class="terminal-header">
+                    <span>REPORT_STREAM.TXT</span>
                     <button id="copyBtn"><i data-lucide="copy" size="14"></i></button>
                 </div>
-                <pre id="outputContent" class="mono">AWAITING SONAR SIGNAL...</pre>
+                <pre id="outputContent" class="mono">SYSTEM IDLE. AWAITING CORE INSTRUCTION...</pre>
             </div>
         </main>
     </div>
