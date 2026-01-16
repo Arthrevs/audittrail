@@ -1,46 +1,93 @@
-/* Crucial: This preserves \n and wraps text naturally */
-.audit-report-display {
-    white-space: pre-wrap;
-    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-    line-height: 1.6;
-    color: #1f2937; /* Dark gray for readability */
-    background-color: hwb(240 98% 2%);
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    border: 1px solid hsl(65, 56%, 35%);
-    /* Add this to your website's CSS */
-.audit-report-display {
-    white-space: pre-wrap;
-    font-family: 'Courier New', Courier, monospace; /* For a terminal/report feel */
-    text-align: left;
-}#report-output {
-    white-space: pre-wrap; /* Preserves line breaks from the backend */
-    text-align: left;
-    font-family: 'Courier New', Courier, monospace;
-    background: #f4f4f4;
-    padding: 20px;
-    border-radius: 8px;
-    line-height: 1.5;
-}/* Add this to your website's CSS */
-.audit-report-display {
-    white-space: pre-wrap;
-    font-family: 'Courier New', Courier, monospace; /* For a terminal/report feel */
-    text-align: left;
-}.confidence-container {
+/* 1. Global Page Styles */
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #0f172a; /* Deep slate dark background */
+    color: #f8fafc;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
     width: 100%;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    margin: 20px 0;
+    max-width: 900px;
+    background: #1e293b;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* 2. Professional Confidence Meter */
+.confidence-container {
+    width: 100%;
+    background-color: #334155;
+    border-radius: 9999px; /* Pill shape */
+    margin: 1.5rem 0;
+    overflow: hidden;
+    border: 1px solid #475569;
 }
 
 .confidence-bar {
-    width: 0%; /* Dynamic width */
-    height: 25px;
-    background-color: #007bff; /* Professional Blue */
+    width: 0%; /* Adjusted dynamically via JS */
+    height: 30px;
+    background: linear-gradient(90deg, #3b82f6, #2dd4bf); /* Blue to Teal gradient */
     text-align: center;
-    line-height: 25px;
-    color: white;
-    border-radius: 10px;
-    transition: width 0.5s ease-in-out;
+    line-height: 30px;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 0.875rem;
+    border-radius: 9999px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
 }
+
+/* 3. The Sequential Audit Report Box */
+#report-output {
+    /* CRITICAL: Preserves the \n line breaks from your Python Backend */
+    white-space: pre-wrap; 
+    
+    /* Technical/Terminal Aesthetic */
+    font-family: 'Fira Code', 'Courier New', Courier, monospace;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    text-align: left;
+    
+    /* Colors and Spacing */
+    color: #e2e8f0;
+    background-color: #020617; /* Near black for the report area */
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid #1e293b;
+    margin-top: 2rem;
+    
+    /* Smooth transition for when content loads */
+    transition: all 0.3s ease;
+    min-height: 200px;
+}
+
+/* 4. Input and Button Styling */
+textarea {
+    width: 100%;
+    background: #0f172a;
+    color: white;
+    border: 1px solid #334155;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+button {
+    background: #3b82f6;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #2563eb;
 }
