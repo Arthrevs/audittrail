@@ -105,26 +105,23 @@ async def process_request(question: str = Body(..., media_type="text/plain")):
     avg_conf = round(sum(confs)/len(confs), 1) if confs else 0
 
     # Professional Sequential Output
-    output = "AUDITTRAIL TRANSPARENCY REPORT\\n"
-    output += f"Consensus Confidence: {avg_conf}%\\n"
-    output += f"Verification Status: {len(successful)} of {len(results)} active\\n\\n"
+    output = "AUDITTRAIL TRANSPARENCY REPORT\n"
+    output += f"Consensus Confidence: {avg_conf}%\n"
+    output += f"Verification Status: {len(successful)} of {len(results)} active\n\n"
 
     for r in results:
         mod = r['model']
         if r.get('success'):
             audit = r['audit']
-            output += f"[{mod}] ANALYSIS\\n"
-            output += f"Confidence Score: {audit.get('confidence_percentage')}%\\n"
-            output += f"Technical Critique: {audit.get('technical_critique')}\\n"
-            output += f"Missing Information: {audit.get('missing_variables')}\\n"
-            output += f"Alternative Interpretations: {audit.get('alternative_interpretations')}\\n"
-            output += f"Risk Factor: {audit.get('risk_assessment')}\\n\\n"
+            output += f"--- [{mod}] ANALYSIS ---\n"
+            output += f"Confidence Score: {audit.get('confidence_percentage')}%\n"
+            output += f"Technical Critique: {audit.get('technical_critique')}\n"
+            output += f"Missing Information: {audit.get('missing_variables')}\n"
+            output += f"Alternative Interpretations: {audit.get('alternative_interpretations')}\n"
+            output += f"Risk Factor: {audit.get('risk_assessment')}\n\n"
         else:
-            output += f"[{mod}] STATUS: FAILED\\nReason: {r.get('error')}\\n\\n"
+            output += f"[{mod}] STATUS: FAILED\nReason: {r.get('error')}\n\n"
 
     output += "MEDICAL DISCLAIMER: Systems cannot diagnose conditions. Consult a professional."
-    return output
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
+    return output # Use single \n and no extra escaping
+    
