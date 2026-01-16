@@ -1,22 +1,29 @@
 async function scanCode() {
     const reportDiv = document.getElementById('report-output');
+    const bar = document.getElementById('confidence-bar');
     const question = document.getElementById('user-input').value;
-    
-    reportDiv.textContent = "Analyzing across multi-model consensus...";
 
     try {
         const response = await fetch('https://audittrail.onrender.com/audit', {
             method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
             body: question
         });
 
-        // CRITICAL: Get response as text, NOT as json
-        const result = await response.text(); 
+        const resultText = await response.text();
         
-        // Display the professional report
-        reportDiv.textContent = result; 
+        // Use Regex to find the "Consensus Confidence: XX.X%" in the text
+        const match = resultText.match(/Consensus Confidence: ([\d.]+)%/);
+        if (match) {
+            const score = match[1];
+            bar.style.width = score + "%";
+            bar.textContent = "Consensus Confidence: " + score + "%";
+            
+            // Optional: Change color based on score
+            bar.style.backgroundColor = score < 50 ? "#dc3545" : "#28a745"; 
+        }
+
+        reportDiv.textContent = resultText;
     } catch (error) {
-        reportDiv.textContent = "Error connecting to AuditTrail Core: " + error.message;
+        reportDiv.textContent = "Error: " + error.message;
     }
 }

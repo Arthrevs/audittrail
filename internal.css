@@ -26,5 +26,21 @@
     white-space: pre-wrap;
     font-family: 'Courier New', Courier, monospace; /* For a terminal/report feel */
     text-align: left;
+}.confidence-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+
+.confidence-bar {
+    width: 0%; /* Dynamic width */
+    height: 25px;
+    background-color: #007bff; /* Professional Blue */
+    text-align: center;
+    line-height: 25px;
+    color: white;
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out;
 }
 }

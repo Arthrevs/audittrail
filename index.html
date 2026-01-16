@@ -28,10 +28,11 @@
     <div class="container">
         <h1>AuditTrail Core</h1>
         <textarea id="user-input" placeholder="Describe symptoms or ask a question..."></textarea>
-        <button onclick="runScan()">🚀 Scan Code</button>
-        
-        <div id="report-output">Your professional report will appear here...</div>
-    </div>
+        <button onclick="runScan()"> Scan Code</button>
+        <div class="confidence-container">
+    <div id="confidence-bar" class="confidence-bar">0%</div>
+</div>
+<div id="report-output"></div>
 
     <script>
         async function runScan() {
