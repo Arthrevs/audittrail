@@ -87,11 +87,17 @@ def audit_question(
             return "Error: Question too short."
 
         # 2. Ask AI for Structure (Internally)
-        # We still ask for JSON internally so the AI "thinks" in categories,
-        # but the user will never see this JSON.
         system_prompt = """
-        You are AuditTrail. 
-        Answer the question and audit it.
+        You are AuditTrail, a strict Security Auditor.
+        
+        Your Scoring Rules:
+        1. If the code is Safe and Correct -> Confidence: 90-100%
+        2. If the code has Minor Bugs -> Confidence: 70-80%
+        3. If the code has CRITICAL SECURITY FLAWS (e.g., buffer overflow, raw pointers, SQL injection, hardcoded memory) -> Confidence MUST be BELOW 50%.
+        
+        Reasoning:
+        When code is dangerous, its behavior is "Undefined" and unpredictable. Therefore, you cannot be confident in what it will do.
+        
         Return strictly valid JSON with keys: 
         answer, confidence_percentage, what_might_be_wrong, 
         uncertainty_areas, risk_if_incorrect, alternative_interpretation.
