@@ -146,17 +146,23 @@ This may take 10-30 seconds depending on query complexity...`;
         const response = await fetch(API_ENDPOINT, {
             method: 'POST',
             headers: { 
-                'Content-Type': 'text/plain',
-                'Accept': 'text/plain'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            body: question
+            body: JSON.stringify({ question: question })
         });
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
-        const textReport = await response.text();
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Unknown error occurred');
+        }
+        
+        const textReport = data.report;
         
         // Display report with typing effect
         await typeText(outputContent, textReport, 5);
