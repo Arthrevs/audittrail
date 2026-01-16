@@ -28,18 +28,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Unified Auditor Prompt for Medical, Math, and Logic
+# Auditor Prompt: Instructions to return specific formatted data
 COMBINED_AUDIT_PROMPT = """
-You are a senior auditor specialized in Medical, Mathematics, and Logic.
-Analyze the user's query and the AI's preliminary findings.
+You are a senior auditor. Analyze the user query and the model perspectives.
 Return a STRICT JSON object:
 {
   "consensus_score": 0-100,
-  "confidence_per_claim": "List of key claims and their individual certainty",
-  "uncertainties_and_missing": "Explicit list of what the AI doesn't know",
-  "reasoning_risks_and_biases": "Potential logical fallacies or biases identified",
-  "severity_warnings": "High-risk outcomes if the logic/diagnosis is wrong",
-  "second_opinion_summary": "Internal comparison of model discrepancies"
+  "claims": {"claim_name": "high/medium/low"},
+  "uncertainties": ["list"],
+  "risks": ["list"],
+  "severity": ["list"],
+  "comparison": "summary"
 }
 """
 
@@ -56,19 +55,17 @@ async def get_model_data(client, model_id, question):
 
 @app.post("/audit", response_class=PlainTextResponse)
 async def process_request(question: str = Body(..., media_type="text/plain")):
-    # Step 1: Parallel initial analysis from both keys
-    ans_tasks = [
-        get_model_data(openai_client, "gpt-4o-mini", question),
-        get_model_data(cerebras_client, "llama3.3-70b", question)
-    ]
-    answers = await asyncio.gather(*ans_tasks)
-    valid_answers = [a for a in answers if a]
+    # 1. Generate Primary Answer (OpenAI ONLY) as requested
+    primary_answer = await get_model_data(openai_client, "gpt-4o-mini", question)
+    
+    # 2. Get Second Perspective (Cerebras) for the Consensus Audit
+    cerebras_perspective = await get_model_data(cerebras_client, "llama3.3-70b", question)
 
-    if not valid_answers:
-        return "ERROR: API Configuration Missing or Failed."
+    if not primary_answer:
+        return "ERROR: Primary AI (OpenAI) failed to respond."
 
-    # Step 2: Generate the Unified Audit by comparing both model perspectives
-    audit_input = f"User Query: {question}\n\nModel Perspectives:\n1. {valid_answers[0]}\n2. {valid_answers[1] if len(valid_answers)>1 else 'N/A'}"
+    # 3. Generate the Unified Audit using both perspectives
+    audit_input = f"User Query: {question}\n\nOpenAI Perspective: {primary_answer}\n\nCerebras Perspective: {cerebras_perspective or 'N/A'}"
     
     try:
         audit_resp = openai_client.chat.completions.create(
@@ -83,20 +80,25 @@ async def process_request(question: str = Body(..., media_type="text/plain")):
     except Exception as e:
         return f"AUDIT FAILURE: {str(e)}"
 
-    # Step 3: Sequential Professional Formatting
-    output = "AUDITTRAIL UNIFIED TRANSPARENCY REPORT\n"
+    # 4. Sequential Professional Formatting
+    output = "ANSWER BY AI\n"  # Updated Header
+    output += "========================================\n"
+    output += f"{primary_answer}\n\n"
+    
+    output += "AUDITTRAIL UNIFIED REPORT\n"
     output += "========================================\n"
     output += f"Combined Consensus Confidence: {data.get('consensus_score') or 0}%\n\n"
     
-    output += f"• Confidence per Claim:\n{data.get('confidence_per_claim')}\n\n"
-    output += f"• Uncertainties & Missing Information:\n{data.get('uncertainties_and_missing')}\n\n"
-    output += f"• Reasoning Risks & Possible Biases:\n{data.get('reasoning_risks_and_biases')}\n\n"
-    output += f"• Severity-Based Warnings:\n{data.get('severity_warnings')}\n\n"
-    output += f"• One-Click Second Opinion (Comparison):\n{data.get('second_opinion_summary')}\n\n"
+    # Arranged Confidence per Claim as requested
+    output += "• Confidence per Claim:\n"
+    claims = data.get('claims', {})
+    for claim, level in claims.items():
+        output += f"{claim}: {level}\n"
+    
+    output += f"\n• Uncertainties & Missing Information:\n" + "\n".join([f"- {i}" for i in data.get('uncertainties', [])])
+    output += f"\n\n• Reasoning Risks & Possible Biases:\n" + "\n".join([f"- {i}" for i in data.get('risks', [])])
+    output += f"\n\n• Severity-Based Warnings:\n" + "\n".join([f"- {i}" for i in data.get('severity', [])])
+    output += f"\n\n• One-Click Second Opinion (Comparison):\n{data.get('comparison')}\n\n"
     
     output += "DISCLAIMER: This report is a cross-model mathematical audit. Consult professionals for final decisions."
     return output
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
