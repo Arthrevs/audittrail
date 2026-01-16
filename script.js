@@ -33,21 +33,21 @@ auditBtn.addEventListener('click', async () => {
     auditBtn.disabled = true;
 
     try {
-        const response = await fetch('http://127.0.0.1:8000/audit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: question
-        });
+        // Replace the fetch block with this production-ready version
+const response = await fetch('https://audittrail.onrender.com/audit', { // Render URL
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: question })
+});
 
-        const textReport = await response.text();
-        outputContent.innerText = textReport;
+const textReport = await response.text();
+outputContent.innerText = textReport;
 
-        // Extract confidence using Regex from your backend's format:
-        // "Combined Consensus Confidence: 85%"
-        const match = textReport.match(/Combined Consensus Confidence:\s*(\d+)%/);
-        if (match && match[1]) {
-            setConfidence(parseInt(match[1]));
-        }
+// Improved Regex to catch the score accurately
+const match = textReport.match(/Combined Consensus Confidence:\s*(\d+)/); 
+if (match && match[1]) {
+    setConfidence(parseInt(match[1]));
+}
 
     } catch (error) {
         outputContent.innerText = "CRITICAL ERROR: Could not connect to AuditTrail Core.";
