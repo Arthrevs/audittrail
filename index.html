@@ -3,172 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuditTrail Core | Unified AI Auditor</title>
+    <title>AuditTrail | Ocean Core</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <!-- Animated Background -->
-    <div class="ocean-background">
-        <div class="wave wave1"></div>
-        <div class="wave wave2"></div>
-        <div class="wave wave3"></div>
-        <div class="bubble bubble1"></div>
-        <div class="bubble bubble2"></div>
-        <div class="bubble bubble3"></div>
-        <div class="bubble bubble4"></div>
-        <div class="bubble bubble5"></div>
-    </div>
+    <div class="ocean-bg"></div>
 
     <div class="app-wrapper">
-        <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar glass">
             <div class="brand">
-                <div class="logo-container">
-                    <i data-lucide="shield-check"></i>
-                </div>
-                <div class="brand-text">
-                    <span class="brand-name">AuditTrail</span>
-                    <span class="brand-tag">PRO</span>
-                </div>
+                <i data-lucide="waves" class="ocean-icon"></i>
+                <span>AuditTrail <small>OCEAN</small></span>
             </div>
 
-            <!-- Consensus Score Meter -->
-            <div class="meter-section glass-card">
-                <span class="meter-label">CONSENSUS SCORE</span>
-                <div class="gauge-wrapper">
-                    <svg viewBox="0 0 100 100" class="gauge-svg">
+            <div class="meter-card">
+                <span class="label">CONSENSUS DEPTH</span>
+                <div class="gauge-container">
+                    <svg viewBox="0 0 100 100">
                         <defs>
-                            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
-                                <stop offset="50%" style="stop-color:#3b82f6;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                            <linearGradient id="oceanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#00f2fe" />
+                                <stop offset="100%" stop-color="#4facfe" />
                             </linearGradient>
                         </defs>
-                        <circle class="gauge-bg" cx="50" cy="50" r="42"></circle>
-                        <circle class="gauge-fill" id="gaugeFill" cx="50" cy="50" r="42"></circle>
+                        <circle class="bg" cx="50" cy="50" r="45"></circle>
+                        <circle class="meter" id="gaugeCircle" cx="50" cy="50" r="45"></circle>
                     </svg>
-                    <div class="gauge-center">
-                        <div class="gauge-value" id="gaugeValue">0</div>
-                        <div class="gauge-percent">%</div>
-                    </div>
+                    <div class="percentage" id="percentValue">0%</div>
                 </div>
-                <div class="confidence-label" id="confidenceLabel">Initializing...</div>
             </div>
 
-            <!-- Navigation -->
-            <nav class="nav-menu">
-                <div class="nav-item active">
-                    <i data-lucide="terminal"></i>
-                    <span>Audit Core</span>
-                </div>
-                <div class="nav-item">
-                    <i data-lucide="shield-alert"></i>
-                    <span>Risk Analysis</span>
-                </div>
-                <div class="nav-item">
-                    <i data-lucide="layers"></i>
-                    <span>Multi-Model</span>
-                </div>
-                <div class="nav-item">
-                    <i data-lucide="database"></i>
-                    <span>System Logs</span>
-                </div>
+            <nav>
+                <a href="#" class="nav-item active"><i data-lucide="anchor"></i> Unified Core</a>
+                <a href="#" class="nav-item"><i data-lucide="activity"></i> Sonar Logs</a>
+                <a href="#" class="nav-item"><i data-lucide="shield-check"></i> Verified Nodes</a>
             </nav>
-
-            <!-- Stats -->
-            <div class="sidebar-stats">
-                <div class="stat-item">
-                    <i data-lucide="cpu"></i>
-                    <div class="stat-content">
-                        <span class="stat-label">Models Active</span>
-                        <span class="stat-value">3</span>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <i data-lucide="activity"></i>
-                    <div class="stat-content">
-                        <span class="stat-label">System Status</span>
-                        <span class="stat-value status-online">Online</span>
-                    </div>
-                </div>
-            </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="content">
-            <!-- Header -->
-            <header class="main-header">
-                <div class="header-content">
-                    <h1 class="page-title">Unified Audit Engine</h1>
-                    <p class="page-subtitle">Cross-verifying AI perspectives with multi-model consensus analysis</p>
-                </div>
-                <div class="header-badges">
-                    <div class="badge badge-blue">
-                        <i data-lucide="zap" size="14"></i>
-                        <span>GPT-4</span>
-                    </div>
-                    <div class="badge badge-purple">
-                        <i data-lucide="brain" size="14"></i>
-                        <span>Claude</span>
-                    </div>
-                    <div class="badge badge-cyan">
-                        <i data-lucide="sparkles" size="14"></i>
-                        <span>Gemini</span>
-                    </div>
-                </div>
+            <header>
+                <h1>Deep Audit Engine</h1>
+                <p>Submerging your data into cross-model verification.</p>
             </header>
 
-            <!-- Input Panel -->
-            <div class="input-panel glass-card">
-                <div class="input-header">
-                    <i data-lucide="edit-3"></i>
-                    <span>Query Input</span>
-                </div>
-                <textarea 
-                    id="userInput" 
-                    placeholder="Enter your query for comprehensive multi-model AI audit analysis...
-Example: 'I have pain in my toe with burning sensation and redness'"
-                ></textarea>
-                <div class="input-footer">
-                    <div class="input-info">
-                        <i data-lucide="info" size="14"></i>
-                        <span>Supports medical, legal, code, math, and general queries</span>
-                    </div>
-                    <button id="auditBtn" class="audit-button">
-                        <span id="btnText">Execute Audit</span>
-                        <div class="loader" id="loader"></div>
-                        <i data-lucide="arrow-right" size="18" id="btnIcon"></i>
-                    </button>
-                </div>
+            <div class="input-container glass">
+                <textarea id="userInput" placeholder="Drop your query into the deep..."></textarea>
+                <button id="auditBtn">
+                    <span id="btnText">INITIATE SCAN</span>
+                    <div class="sonar-wave" id="loader"></div>
+                </button>
             </div>
 
-            <!-- Results Panel -->
-            <div class="results-panel glass-card">
-                <div class="terminal-header">
-                    <div class="terminal-tabs">
-                        <div class="terminal-tab active">
-                            <i data-lucide="file-text" size="14"></i>
-                            <span>AUDIT_REPORT.TXT</span>
-                        </div>
-                    </div>
-                    <div class="terminal-actions">
-                        <button class="icon-button" id="copyBtn" title="Copy Report">
-                            <i data-lucide="copy" size="16"></i>
-                        </button>
-                        <button class="icon-button" id="downloadBtn" title="Download Report">
-                            <i data-lucide="download" size="16"></i>
-                        </button>
-                    </div>
+            <div class="terminal-shell glass">
+                <div class="terminal-top">
+                    <span>SONAR_READOUT.DAT</span>
+                    <button id="copyBtn"><i data-lucide="copy" size="14"></i></button>
                 </div>
-                <div class="terminal-body">
-                    <pre id="outputContent" class="terminal-output">Ready for analysis...</pre>
-                </div>
+                <pre id="outputContent" class="mono">AWAITING SONAR SIGNAL...</pre>
             </div>
         </main>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
