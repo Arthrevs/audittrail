@@ -22,7 +22,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 app = FastAPI(
     title="AuditTrail API (Text-to-Text)",
     description="Accepts plain text, returns a plain text report.",
-    version="6.1.0"
+    version="6.2.0"
 )
 
 app.add_middleware(
@@ -45,11 +45,11 @@ def format_text_report(question, data):
                 AUDITTRAIL TRANSPARENCY REPORT
 ============================================================
 
->>> CODE SNIPPET / QUESTION:
-{question[:200]}... (truncated for brevity)
+>>> INPUT SNIPPET:
+{question[:200]}... (truncated)
 
 ------------------------------------------------------------
->>> AI ANSWER:
+>>> AI ANALYSIS:
 {data.get('answer')}
 
 ------------------------------------------------------------
@@ -58,16 +58,16 @@ def format_text_report(question, data):
 [ Confidence Score ]
 {data.get('confidence_percentage')}%
 
-[ Analysis Logic ]
+[ Why This Score? ]
 {data.get('what_might_be_wrong')}
 
-[ Uncertainty Areas ]
+[ Missing Context / Variables ]
 {data.get('uncertainty_areas')}
 
-[ Risks If Incorrect ]
+[ Risks of Single Answer ]
 {data.get('risk_if_incorrect')}
 
-[ Alternative Interpretation ]
+[ Alternative Possibilities ]
 {data.get('alternative_interpretation')}
 ============================================================
 """
@@ -77,32 +77,34 @@ def format_text_report(question, data):
 # -------------------------------------------------
 @app.post("/audit", response_class=PlainTextResponse)
 def audit_question(
-    # Input is strictly Plain Text (Matches your Frontend)
+    # Input is strictly Plain Text
     question: str = Body(..., media_type="text/plain")
 ):
     try:
         # 1. Validate
         question = question.strip()
         if len(question) < 5:
-            return "Error: Code is too short to analyze."
+            return "Error: Input is too short to analyze."
 
         # 2. Ask AI for Structure (Internally)
-        # This prompt now includes the advanced "Honesty" logic
         system_prompt = """
-        You are AuditTrail, an advanced AI Security & Logic Auditor.
-        You use "Generative Self-Reflection" to calculate confidence scores.
+        You are AuditTrail, a Logic & Security Auditor.
+        Your goal is HONESTY, not politeness.
+        
+        STRICT SCORING RULES:
+        1. [90-100%] DETERMINISTIC: Code/Logic is 100% clear, safe, and has only one possible outcome.
+        2. [70-80%]  MINOR AMBIGUITY: Code is messy, or question is slightly vague but has a standard answer.
+        3. [< 50%]   SECURITY CRITICAL: Code has bugs, buffer overflows, or dangerous instructions.
+        4. [< 40%]   RACE CONDITIONS: Code outcome depends on luck (threading).
+        5. [< 30%]   CONTEXT MISSING (THE "DEPENDS" RULE): 
+           - If the user asks a Medical/Legal/Technical question but leaves out symptoms, duration, or jurisdiction.
+           - You CANNOT be confident. You must list the possibilities (e.g., "Could be Migraine (80%), Could be Tumor (5%)").
+           - Do NOT just say "See a doctor." Analyze the logic gap.
+        6. [< 10%]   PARADOX/MALICE: Infinite loops, logical contradictions, or malicious intent.
 
-        STRICT SCORING RULES (The "Honesty" Protocol):
-        1. [90-100%] SAFE: Code is deterministic, standard, and secure.
-        2. [70-80%]  MINOR BUGS: Code is messy or inefficient, but safe.
-        3. [< 50%]   SECURITY CRITICAL: Buffer overflows, raw pointers, SQL Injection, Hardcoded secrets.
-        4. [< 40%]   RACE CONDITIONS / AMBIGUITY: Threading without locks, non-deterministic outputs (Conflicting Truths).
-        5. [< 20%]   MALICIOUS INTENT: Insider threats, logic bombs, "Rage Quit" comments, sabotage.
-        6. [< 10%]   PHILOSOPHICAL PARADOX: Infinite recursion logic, "Liar's Paradox", unsolvable logic traps.
-
-        Reasoning:
-        If the code's output cannot be predicted (Race Condition) or is logically impossible (Paradox), your confidence MUST be low. 
-        If the code implies human malice (sabotage comments), your confidence in its "Safety" is near zero.
+        Output Instructions:
+        - In 'answer', provide a detailed breakdown of possibilities, not just a generic recommendation.
+        - In 'uncertainty_areas', list the specific questions you need answered to be 100% sure.
 
         Return strictly valid JSON with keys: 
         answer, confidence_percentage, what_might_be_wrong, 
