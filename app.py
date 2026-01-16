@@ -15,22 +15,12 @@ logging.basicConfig(level=logging.INFO)
 # Environment Variables from Render
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 CEREBRAS_API_KEY = os.getenv("CEREBRAS_API_KEY")
-CLOUDFLARE_API_TOKEN = os.getenv("CLOUDFLARE_API_TOKEN")
-CLOUDFLARE_ACCOUNT_ID = os.getenv("CLOUDFLARE_ACCOUNT_ID")
 
 # Initialize Specialized Clients
 # 1. GPT-4o-mini via OpenAI
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-# 2. Llama 3.3 70B via Cloudflare (Replaces Gemini)
-cloudflare_client = None
-if CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID:
-    cloudflare_client = OpenAI(
-        base_url=f"https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1",
-        api_key=CLOUDFLARE_API_TOKEN
-    )
-
-# 3. GPT-OSS 120B via Cerebras (Replaces Grok)
+# 2. GPT-OSS (Llama 3.3) via Cerebras
 cerebras_client = None
 if CEREBRAS_API_KEY:
     cerebras_client = OpenAI(
@@ -38,7 +28,7 @@ if CEREBRAS_API_KEY:
         api_key=CEREBRAS_API_KEY
     )
 
-app = FastAPI(title="AuditTrail Professional Core", version="11.2.0")
+app = FastAPI(title="AuditTrail Professional Core", version="11.4.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -95,7 +85,6 @@ async def run_audit(client, model_id, provider_name, question):
 async def process_request(question: str = Body(..., media_type="text/plain")):
     tasks = [
         run_audit(openai_client, "gpt-4o-mini", "GPT-4", question),
-        run_audit(cloudflare_client, "@cf/meta/llama-3.3-70b-instruct-fp8-fast", "Cloudflare", question),
         run_audit(cerebras_client, "llama3.3-70b", "Cerebras", question)
     ]
     
@@ -123,5 +112,8 @@ async def process_request(question: str = Body(..., media_type="text/plain")):
             output += f"[{mod}] STATUS: FAILED\nReason: {r.get('error')}\n\n"
 
     output += "MEDICAL DISCLAIMER: Systems cannot diagnose conditions. Consult a professional."
-    return output # Use single \n and no extra escaping
-    
+    return output
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
