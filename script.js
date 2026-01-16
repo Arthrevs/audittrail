@@ -17,12 +17,10 @@ const copyBtn = document.getElementById('copyBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 
 // ============================================
-// CONFIGURATION
-// ============================================
-// Automatically detects if running on Localhost or Render
+// Configuration
 const API_ENDPOINT = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://127.0.0.1:8000/audit'
-    : 'https://audittrail.onrender.com/audit'; 
+    : 'https://audittrail.onrender.com/audit'; // Correct absolute URL for Render
 
 // ============================================
 // GAUGE ANIMATION LOGIC
