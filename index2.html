@@ -3,122 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AuditTrail Core | Professional Security Monitoring</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #020617; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
-        .scan-line { height: 2px; background: linear-gradient(90deg, transparent, #3b82f6, transparent); animation: scan 2s infinite; }
-        @keyframes scan { 0% { transform: translateY(-10px); } 100% { transform: translateY(200px); } }
-    </style>
+    <title>AuditTrail Core | Unified AI Auditor</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="text-slate-200 antialiased">
+<body>
+    <div class="app-wrapper">
+        <aside class="sidebar">
+            <div class="brand">
+                <i data-lucide="shield-check"></i>
+                <span>AuditTrail <small>PRO</small></span>
+            </div>
 
-    <nav class="flex justify-between items-center px-8 py-6 max-w-7xl mx-auto">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]">A</div>
-            <span class="text-xl font-bold tracking-tight uppercase">AuditTrail <span class="text-blue-500 text-sm">PRO</span></span>
-        </div>
-        <div class="hidden md:flex gap-8 text-sm font-medium text-slate-400">
-            <a href="#" class="hover:text-blue-400 transition">Dashboard</a>
-            <a href="#" class="hover:text-blue-400 transition">Reports</a>
-            <a href="#" class="hover:text-blue-400 transition">Nodes</a>
-            <a href="#" class="hover:text-blue-400 transition">Settings</a>
-        </div>
-        <button class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-full text-sm font-semibold transition glow-blue">
-            Launch Console
-        </button>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-6 py-12">
-        
-        <div class="grid lg:grid-cols-12 gap-8">
-            
-            <div class="lg:col-span-4 space-y-6">
-                <div class="glass p-8 rounded-3xl relative overflow-hidden">
-                    <div class="scan-line absolute inset-x-0 top-0 opacity-30"></div>
-                    <h2 class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">System Core</h2>
-                    <h1 class="text-4xl font-extrabold text-white mb-6">AuditTrail <br/><span class="text-blue-500">Active Scan</span></h1>
-                    
-                    <div class="flex flex-col items-center justify-center py-6">
-                        <div class="relative flex items-center justify-center">
-                            <svg class="w-48 h-48 transform -rotate-90">
-                                <circle cx="96" cy="96" r="88" stroke="currentColor" stroke-width="8" fill="transparent" class="text-slate-800" />
-                                <circle cx="96" cy="96" r="88" stroke="currentColor" stroke-width="8" fill="transparent" stroke-dasharray="552" stroke-dashoffset="400" class="text-blue-500 transition-all duration-1000" />
-                            </svg>
-                            <span class="absolute text-5xl font-black mono italic">0%</span>
-                        </div>
-                        <button class="mt-8 w-full bg-slate-100 text-slate-950 font-bold py-4 rounded-xl hover:bg-white transition uppercase tracking-wider">
-                            Start New Scan
-                        </button>
-                    </div>
+            <div class="meter-section glass">
+                <span class="meter-label">CONSENSUS SCORE</span>
+                <div class="gauge-wrapper">
+                    <svg viewBox="0 0 100 100">
+                        <circle class="gauge-bg" cx="50" cy="50" r="45"></circle>
+                        <circle class="gauge-fill" id="gaugeFill" cx="50" cy="50" r="45"></circle>
+                    </svg>
+                    <div class="gauge-value" id="gaugeValue">0%</div>
                 </div>
             </div>
 
-            <div class="lg:col-span-8">
-                <div class="glass rounded-3xl h-full flex flex-col">
-                    <div class="p-6 border-b border-slate-800 flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                            <h3 class="font-bold text-sm uppercase tracking-widest">Live Audit Logs</h3>
-                        </div>
-                        <span class="text-xs mono text-slate-500">Instance: trail_041</span>
-                    </div>
+            <nav>
+                <div class="nav-item active"><i data-lucide="terminal"></i> Audit Core</div>
+                <div class="nav-item"><i data-lucide="shield-alert"></i> Risk Analysis</div>
+                <div class="nav-item"><i data-lucide="database"></i> System Logs</div>
+            </nav>
+        </aside>
 
-                    <div class="flex-grow p-6 mono text-sm space-y-4">
-                        <div class="flex gap-4 text-emerald-400">
-                            <span class="opacity-50">[10:42:01]</span>
-                            <span>Initializing security protocols... OK</span>
-                        </div>
-                        <div class="flex gap-4 text-blue-400">
-                            <span class="opacity-50">[10:42:05]</span>
-                            <span>Mapping system architecture... 12 nodes found</span>
-                        </div>
-                        <div class="flex gap-4 text-slate-400">
-                            <span class="opacity-50">[10:42:08]</span>
-                            <span>Checking permissions for user 'admin_main'...</span>
-                        </div>
-                        <div class="flex gap-4 text-amber-400">
-                            <span class="opacity-50">[10:42:15]</span>
-                            <span>WARNING: Unverified entry detected at NODE_X4</span>
-                        </div>
-                        <div class="flex gap-4 text-blue-500">
-                            <span class="opacity-50">[10:42:20]</span>
-                            <span class="animate-pulse">_</span>
-                        </div>
-                    </div>
+        <main class="content">
+            <header>
+                <h1>Unified Audit Engine</h1>
+                <p>Cross-verifying OpenAI GPT-4o & Cerebras Llama-3.3 perspectives.</p>
+            </header>
 
-                    <div class="p-4 bg-slate-950/50 rounded-b-3xl text-center">
-                        <p class="text-xs text-slate-500">Ready for command input</p>
-                    </div>
+            <div class="input-panel glass">
+                <textarea id="userInput" placeholder="Enter claim or query for mathematical audit..."></textarea>
+                <div class="actions">
+                    <button id="auditBtn">
+                        <span id="btnText">EXECUTE AUDIT</span>
+                        <div class="loader" id="loader"></div>
+                    </button>
                 </div>
             </div>
 
-        </div>
-
-        <div class="grid md:grid-cols-4 gap-6 mt-8">
-            <div class="glass p-6 rounded-2xl">
-                <p class="text-slate-500 text-xs font-bold uppercase mb-1">Threats Blocked</p>
-                <p class="text-2xl font-black text-white">1,204</p>
+            <div class="terminal-container glass">
+                <div class="terminal-header">
+                    <span>REPORT_STREAM.TXT</span>
+                    <button id="copyBtn"><i data-lucide="copy" size="14"></i></button>
+                </div>
+                <pre id="outputContent" class="mono">SYSTEM IDLE. AWAITING CORE INSTRUCTION...</pre>
             </div>
-            <div class="glass p-6 rounded-2xl border-l-4 border-l-blue-500">
-                <p class="text-slate-500 text-xs font-bold uppercase mb-1">Uptime</p>
-                <p class="text-2xl font-black text-white">99.9%</p>
-            </div>
-            <div class="glass p-6 rounded-2xl">
-                <p class="text-slate-500 text-xs font-bold uppercase mb-1">Active Users</p>
-                <p class="text-2xl font-black text-white">24</p>
-            </div>
-            <div class="glass p-6 rounded-2xl border-l-4 border-l-emerald-500">
-                <p class="text-slate-500 text-xs font-bold uppercase mb-1">Health Score</p>
-                <p class="text-2xl font-black text-white text-emerald-400">Stable</p>
-            </div>
-        </div>
-
-    </main>
-
+        </main>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
